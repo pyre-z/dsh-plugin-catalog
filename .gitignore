@@ -1,0 +1,3 @@
+*.tmp
+index.json.tmp
+.DS_Store
