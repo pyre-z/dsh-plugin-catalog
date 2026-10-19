@@ -30,12 +30,24 @@ https://cdn.jsdelivr.net/npm/dsh-plugin-catalog/index.json
 
 ## 更新快照
 
+### 自动（GitHub Actions）
+
+`.github/workflows/sync-index.yml` 每天 03:17 UTC（11:17 CST）自动检查 npm `latest`，
+发现新版本就更新 `index.json` + `.version` 并提交推送；版本没变则直接跳过，不产生空提交。
+
+- 手动触发：仓库 Actions 页 → `Sync index.json` → **Run workflow**
+- 运行摘要会写明当前版本、文件大小与 sha256
+- 自动提交由 `github-actions[bot]` 完成，**不带 GPG 签名**（GitHub 会标 Unverified，属预期）
+
+### 手动（本地）
+
 ```bash
 bash sync.sh
 ```
 
-脚本会读取 npm 的 `latest` 标签、下载对应版本、校验 JSON 可解析后覆盖 `index.json` 并更新 `.version`；
-**不会自动 commit**，改动确认后自行提交。
+读取 npm 的 `latest` 标签 → 下载 → 校验 JSON 结构 → 覆盖 `index.json` 并更新 `.version`，
+但**不会自动 commit**，改动确认后自行提交。
+
 
 ## 注意
 

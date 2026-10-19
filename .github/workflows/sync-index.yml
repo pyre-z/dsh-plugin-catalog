@@ -1,0 +1,67 @@
+name: Sync index.json
+
+on:
+  schedule:
+    # 每天 03:17 UTC = 11:17 CST
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-index
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: 检出仓库
+        uses: actions/checkout@v7
+
+      - name: 抓取并校验最新快照
+        id: sync
+        run: |
+          bash sync.sh
+          if git diff --quiet -- index.json .version; then
+            echo "已是最新版本，无需提交"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            VER=$(cat .version)
+            echo "检测到新版本：${VER}"
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "version=${VER}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: 提交并推送
+        if: steps.sync.outputs.changed == 'true'
+        env:
+          VER: ${{ steps.sync.outputs.version }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          SHA=$(sha256sum index.json | cut -d' ' -f1)
+          {
+            echo ":arrow_up: 同步 dsh-plugin-catalog 至 ${VER}"
+            echo "- 更新 index.json（版本 ${VER}）"
+            echo "- sha256: ${SHA}"
+            echo "- 更新 .version"
+            echo "- 来源: https://cdn.jsdelivr.net/npm/dsh-plugin-catalog@${VER}/index.json"
+          } > "$RUNNER_TEMP/commit-msg.txt"
+          git add index.json .version
+          git commit -F "$RUNNER_TEMP/commit-msg.txt"
+          git push
+
+      - name: 输出摘要
+        run: |
+          {
+            echo "### 同步结果"
+            echo ""
+            echo "- 本地版本: \`$(cat .version)\`"
+            echo "- index.json 大小: $(stat -c%s index.json) 字节"
+            echo "- sha256: \`$(sha256sum index.json | cut -d' ' -f1)\`"
+            echo "- 是否写入提交: \`${{ steps.sync.outputs.changed }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
