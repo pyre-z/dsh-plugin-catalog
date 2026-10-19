@@ -49,6 +49,28 @@ bash sync.sh
 但**不会自动 commit**，改动确认后自行提交。
 
 
+## 同步到阿里云 OSS
+
+workflow 在抓取（及必要时提交）之后，会把 `index.json` 上传到 OSS：
+
+- 对象：`oss://pyre-z/dsh-plugin-catalog/index.json`
+- 公网地址：`https://pyre-z.oss-cn-chengdu.aliyuncs.com/dsh-plugin-catalog/index.json`
+- 元数据：`Content-Type: application/json`、`Cache-Control: public, max-age=300`、存储类型 Standard
+- 桶 `pyre-z` 的 ACL 是 `public-read`，所以该对象可直接公网读取
+
+凭据与参数：
+
+- GitHub Secrets：`OSS_ACCESS_KEY_ID`、`OSS_ACCESS_KEY_SECRET`
+- 可选仓库 Variables（不设置则用脚本默认值）：`OSS_REGION`、`OSS_BUCKET`、`OSS_PREFIX`
+
+本地手动上传（密钥只走环境变量，不写进仓库）：
+
+```bash
+export OSS_ACCESS_KEY_ID=...
+export OSS_ACCESS_KEY_SECRET=...
+bash scripts/upload-oss.sh
+```
+
 ## 注意
 
 本仓库是**私有**仓库，因此 `cdn.jsdelivr.net/gh/pyre-z/dsh-plugin-catalog@main/index.json` 这类
