@@ -28,10 +28,25 @@ else
 fi
 
 echo "上传 $(stat -c%s index.json) 字节 -> ${DEST}（region=${REGION}）"
-ossutil cp -f index.json "$DEST" \
-  --region "$REGION" \
-  --storage-class Standard \
-  --cache-control "public, max-age=300"
+
+# 上传可能因网络抖动卡住（曾出现 10 分钟挂死被 job 超时掐掉），
+# 每条尝试包一层 timeout，失败后带退避重试
+RETRIES="${OSS_RETRIES:-3}"
+ATTEMPT=1
+until timeout 240 ossutil cp -f index.json "$DEST" \
+    --region "$REGION" \
+    --storage-class Standard \
+    --cache-control "public, max-age=300" \
+    --connect-timeout 15 \
+    --read-timeout 60; do
+  if [ "$ATTEMPT" -ge "$RETRIES" ]; then
+    echo "上传连续失败 ${RETRIES} 次，放弃" >&2
+    exit 1
+  fi
+  echo "第 ${ATTEMPT} 次上传失败，10 秒后重试（最多 ${RETRIES} 次）" >&2
+  ATTEMPT=$((ATTEMPT + 1))
+  sleep 10
+done
 
 echo "--- 远端对象信息 ---"
 ossutil stat "$DEST" --region "$REGION"

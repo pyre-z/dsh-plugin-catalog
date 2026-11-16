@@ -2,8 +2,10 @@ name: Sync index.json
 
 on:
   schedule:
-    # 每天 03:17 UTC = 11:17 CST
+    # 两条 cron 错开 10 小时：GitHub 对 scheduled workflow 有 5～8 小时排队延迟，
+    # 单条 cron 的实际落地时刻不可控，两条配合可保证最长陈旧约 12 小时
     - cron: "17 3 * * *"
+    - cron: "17 13 * * *"
   workflow_dispatch:
 
 permissions:
@@ -16,7 +18,7 @@ concurrency:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - name: 检出仓库
         uses: actions/checkout@v7

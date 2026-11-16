@@ -32,10 +32,13 @@ https://cdn.jsdelivr.net/npm/dsh-plugin-catalog/index.json
 
 ### 自动（GitHub Actions）
 
-`.github/workflows/sync-index.yml` 每天 03:17 UTC（11:17 CST）自动检查 npm `latest`，
+`.github/workflows/sync-index.yml` 用两条 cron（`17 3` 与 `17 13` UTC）检查 npm `latest`，
 发现新版本就更新 `index.json` + `.version` 并提交推送；版本没变则直接跳过，不产生空提交。
 
+- **注意**：GitHub 对 scheduled workflow 有 5～8 小时排队延迟，实测单条 cron 落地时刻在 16:30～19:00 CST 之间浮动，
+  所以不保证「几点几分」精确执行，只保证**高频刷新**（两条错开 10 小时，最长陈旧约 12 小时）
 - 手动触发：仓库 Actions 页 → `Sync index.json` → **Run workflow**
+- 上传带 3 次重试（每次上限 240 秒），避免网络抖动把整轮拖到 job 超时
 - 运行摘要会写明当前版本、文件大小与 sha256
 - 自动提交由 `github-actions[bot]` 完成，**不带 GPG 签名**（GitHub 会标 Unverified，属预期）
 
