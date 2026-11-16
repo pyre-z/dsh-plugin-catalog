@@ -9,8 +9,7 @@
 
 | 途径 | 地址 | 说明 |
 | --- | --- | --- |
-| jsDelivr（本仓库） | `https://cdn.jsdelivr.net/gh/pyre-z/dsh-plugin-catalog@main/index.json` | 公开后可用，首次访问由 jsDelivr 回源抓取 |
-| 阿里云 OSS | `https://pyre-z.oss-cn-chengdu.aliyuncs.com/dsh-plugin-catalog/index.json` | 每次同步都会刷新，`Cache-Control: public, max-age=300` |
+| jsDelivr（本仓库） | `https://cdn.jsdelivr.net/gh/pyre-z/dsh-plugin-catalog@main/index.json` | 首次访问由 jsDelivr 回源抓取 |
 | jsDelivr（npm 上游） | `https://cdn.jsdelivr.net/npm/dsh-plugin-catalog/index.json` | 直接取 npm 包，与本仓库无关 |
 | 上游官网 | `https://awesome-dsh-plugin.com/index.json` | 数据源站（GitHub Pages） |
 
@@ -46,7 +45,6 @@
 - **注意**：GitHub 对 scheduled workflow 有 5～8 小时排队延迟，实测单条 cron 落地时刻在 16:30～19:00 CST 之间浮动，
   所以不保证「几点几分」精确执行，只保证**高频刷新**（两条错开 10 小时，最长陈旧约 12 小时）
 - 手动触发：仓库 Actions 页 → `Sync index.json` → **Run workflow**
-- 上传带 3 次重试（每次上限 240 秒），避免网络抖动把整轮拖到 job 超时
 - 运行摘要会写明当前版本、文件大小与 sha256
 - 自动提交由 `github-actions[bot]` 完成，**不带 GPG 签名**（GitHub 会标 Unverified，属预期）
 
@@ -59,32 +57,10 @@ bash sync.sh
 读取 npm 的 `latest` 标签 → 下载 → 校验 JSON 结构 → 覆盖 `index.json` 并更新 `.version`，
 但**不会自动 commit**，改动确认后自行提交。
 
-## 同步到阿里云 OSS
-
-workflow 在抓取（及必要时提交）之后，会把 `index.json` 上传到 OSS：
-
-- 对象：`oss://pyre-z/dsh-plugin-catalog/index.json`
-- 公网地址：`https://pyre-z.oss-cn-chengdu.aliyuncs.com/dsh-plugin-catalog/index.json`
-- 元数据：`Content-Type: application/json`、`Cache-Control: public, max-age=300`、存储类型 Standard
-- 桶 `pyre-z` 的 ACL 是 `public-read`，所以该对象可直接公网读取
-
-凭据与参数：
-
-- GitHub Secrets：`OSS_ACCESS_KEY_ID`、`OSS_ACCESS_KEY_SECRET`
-- 可选仓库 Variables（不设置则用脚本默认值）：`OSS_REGION`、`OSS_BUCKET`、`OSS_PREFIX`
-
-本地手动上传（密钥只走环境变量，不写进仓库）：
-
-```bash
-export OSS_ACCESS_KEY_ID=...
-export OSS_ACCESS_KEY_SECRET=...
-bash scripts/upload-oss.sh
-```
-
 ## 限制与注意事项
 
 - **jsDelivr 单文件上限 20 MB**。本文件在 2026-10-20 是 2.39 MB、2026-11-14 已 4.58 MB，
-  按当前增长速度将来可能触顶；届时 `/gh/` 与 `/npm/` 都会失效，但 OSS 直链不受影响。
+  按当前增长速度将来可能触顶；届时 `/gh/` 与 `/npm/` 都会失效，需要改用其他分发方式。
 - 本仓库是**公开**仓库，任何人可读取与 fork；其中不含任何密钥（凭据只存在于 GitHub Secrets）。
 - 上游数据由社区维护，本仓库不保证内容准确性与可用性，仅保证与上游同步。
 - 本仓库是镜像，**请不要在此提交上游数据的修改**，问题请反馈到上游仓库。
