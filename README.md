@@ -33,7 +33,8 @@
 - 上游官网直链：`https://awesome-dsh-plugin.com/index.json`（GitHub Pages 托管）
 - 上游仓库：`https://github.com/awesome-dsh-plugin/awesome-dsh-plugin`
 
-许可：上游为 CC0-1.0，本镜像沿用。
+许可：上游为 [CC0-1.0](https://creativecommons.org/publicdomain/zero/1.0/)，本镜像沿用；
+仓库内的 `LICENSE` 与上游 npm 包内同名文件逐字节相同（7,048 字节，sha256 `a2010f34…`）。
 
 ## 更新快照
 
