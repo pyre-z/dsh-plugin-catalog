@@ -1,23 +1,30 @@
-# dsh-plugin-catalog（私有镜像）
+# dsh-plugin-catalog（镜像）
 
-存放 npm 包 [`dsh-plugin-catalog`](https://www.npmjs.com/package/dsh-plugin-catalog) 的 `index.json`，
-即下面这个 CDN 链接指向的文件：
+存放 npm 包 [`dsh-plugin-catalog`](https://www.npmjs.com/package/dsh-plugin-catalog) 的 `index.json` ——
+[awesome-dsh-plugin.com](https://awesome-dsh-plugin.com) 社区维护的 DeepSeek Harness（dsh）插件目录快照。
 
-```
-https://cdn.jsdelivr.net/npm/dsh-plugin-catalog/index.json
-```
+本仓库只做**镜像与分发**：所有内容来自上游（CC0-1.0 许可），不添加自有数据。
+
+## 可用直链
+
+| 途径 | 地址 | 说明 |
+| --- | --- | --- |
+| jsDelivr（本仓库） | `https://cdn.jsdelivr.net/gh/pyre-z/dsh-plugin-catalog@main/index.json` | 公开后可用，首次访问由 jsDelivr 回源抓取 |
+| 阿里云 OSS | `https://pyre-z.oss-cn-chengdu.aliyuncs.com/dsh-plugin-catalog/index.json` | 每次同步都会刷新，`Cache-Control: public, max-age=300` |
+| jsDelivr（npm 上游） | `https://cdn.jsdelivr.net/npm/dsh-plugin-catalog/index.json` | 直接取 npm 包，与本仓库无关 |
+| 上游官网 | `https://awesome-dsh-plugin.com/index.json` | 数据源站（GitHub Pages） |
 
 ## 当前快照
 
 | 项 | 值 |
 | --- | --- |
-| 版本 | `2026.1019.8082` |
-| 文件大小 | 2,390,028 字节 |
-| 插件条目 | 3,036 |
-| sha256 | `02919f4c1febf279442135197ffbe0586b4dce51d8cf38c2658c1710d02e2d54` |
-| 抓取日期 | 2026-10-19 |
+| 版本 | `2026.1114.20961` |
+| 文件大小 | 4,580,866 字节 |
+| 插件条目 | 5,643 |
+| sha256 | `bb7091c8a387437c07018ef98efcfce3d2937140ba8a1b115279fe6fdf31876f` |
+| 记录日期 | 2026-11-16 |
 
-版本号同时记录在 `.version` 文件里，方便脚本比对。
+> 本表是手动更新的，可能滞后。**权威版本号以 `.version` 文件为准**，字节级校验请对仓库里的 `index.json` 直接算 sha256。
 
 ## 数据来源
 
@@ -51,7 +58,6 @@ bash sync.sh
 读取 npm 的 `latest` 标签 → 下载 → 校验 JSON 结构 → 覆盖 `index.json` 并更新 `.version`，
 但**不会自动 commit**，改动确认后自行提交。
 
-
 ## 同步到阿里云 OSS
 
 workflow 在抓取（及必要时提交）之后，会把 `index.json` 上传到 OSS：
@@ -74,7 +80,10 @@ export OSS_ACCESS_KEY_SECRET=...
 bash scripts/upload-oss.sh
 ```
 
-## 注意
+## 限制与注意事项
 
-本仓库是**私有**仓库，因此 `cdn.jsdelivr.net/gh/pyre-z/dsh-plugin-catalog@main/index.json` 这类
-jsDelivr GitHub 加速地址无法使用（jsDelivr 只索引公开仓库）。若需要 CDN 直链，请改用上面的 npm CDN 或上游官网。
+- **jsDelivr 单文件上限 20 MB**。本文件在 2026-10-20 是 2.39 MB、2026-11-14 已 4.58 MB，
+  按当前增长速度将来可能触顶；届时 `/gh/` 与 `/npm/` 都会失效，但 OSS 直链不受影响。
+- 本仓库是**公开**仓库，任何人可读取与 fork；其中不含任何密钥（凭据只存在于 GitHub Secrets）。
+- 上游数据由社区维护，本仓库不保证内容准确性与可用性，仅保证与上游同步。
+- 本仓库是镜像，**请不要在此提交上游数据的修改**，问题请反馈到上游仓库。
